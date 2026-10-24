@@ -53,6 +53,7 @@ Notas de grave a aguda. Frecuencias calculadas desde la nota y La4; nunca guarda
 | Guitarra | 6 | Drop D | D2 A2 D3 G3 B3 E4 |
 | Guitarra | 6 | Medio tono abajo | D#2 G#2 C#3 F#3 A#3 D#4 |
 | Guitarra | 6 | Un tono abajo | D2 G2 C3 F3 A3 D4 |
+| Guitarra | 6 | Dos tonos abajo | C2 F2 A#2 D#3 G3 C4 |
 | Guitarra | 6 | Drop C | C2 G2 C3 F3 A3 D4 |
 | Guitarra | 6 | DADGAD | D2 A2 D3 G3 A3 D4 |
 | Guitarra | 6 | Open G | D2 G2 D3 G3 B3 D4 |
@@ -63,6 +64,7 @@ Notas de grave a aguda. Frecuencias calculadas desde la nota y La4; nunca guarda
 | Guitarra | 8 | Drop E | E1 B1 E2 A2 D3 G3 B3 E4 |
 | Bajo | 4 | Estándar | E1 A1 D2 G2 |
 | Bajo | 4 | Drop D | D1 A1 D2 G2 |
+| Bajo | 4 | Dos tonos abajo | C1 F1 A#1 D#2 |
 | Bajo | 5 | Estándar | B0 E1 A1 D2 G2 |
 | Bajo | 6 | Estándar | B0 E1 A1 D2 G2 C3 |
 

@@ -1,9 +1,9 @@
 const RANGE = 50;
 const TICKS = Array.from({ length: 21 }, (_, i) => i * 5 - RANGE);
 const LABELS = [-50, -25, 0, 25, 50];
-// Hue stops by |cents|: green when in tune, amber mid-way, red far off.
+// Hue stops by |cents|: lime when in tune, amber mid-way, red far off.
 const HUE_STOPS: readonly [number, number][] = [
-  [3, 145],
+  [3, 78],
   [15, 40],
   [35, 6],
 ];
@@ -22,7 +22,19 @@ export function meterColor(cents: number | null, outOfRange: boolean): string {
   if (cents === null) return 'var(--fg)';
   if (outOfRange) return 'var(--far)';
   const abs = Math.abs(cents);
-  return `hsl(${meterHue(abs).toFixed(0)} ${abs <= HUE_STOPS[0][0] ? 70 : 90}% 62%)`;
+  if (abs <= HUE_STOPS[0][0]) return 'var(--ok)';
+  return `hsl(${meterHue(abs).toFixed(0)} 90% 62%)`;
+}
+
+/** Dot angle in degrees from vertical: −90 (left end) … +90 (right end). */
+export function arcAngle(cents: number | null): number {
+  if (cents === null) return 0;
+  return (Math.max(-RANGE, Math.min(RANGE, cents)) / RANGE) * 90;
+}
+
+/** Dash pattern on the arc (pathLength 180, 1 unit = 1°) drawing from the center to the dot. */
+export function traceDash(angle: number): string {
+  return `0 ${90 + Math.min(0, angle)} ${Math.abs(angle)} 360`;
 }
 
 const tickHeight = (c: number) => (c === 0 ? 100 : c % 25 === 0 ? 55 : c % 10 === 0 ? 38 : 22);

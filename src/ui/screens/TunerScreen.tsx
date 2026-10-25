@@ -2,7 +2,7 @@ import { displayNote, type NoteNaming } from '../../music/notes';
 import type { TunerView } from '../../music/tuner';
 import type { Tuning } from '../../music/tunings';
 import { InstrumentIcon } from '../components/InstrumentIcon';
-import { Meter, meterColor } from '../components/Meter';
+import { Meter, meterColor } from '../components/ArcMeter';
 import { StringList } from '../components/StringList';
 import { S, tuningLabel } from '../strings';
 

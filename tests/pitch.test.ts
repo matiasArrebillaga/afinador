@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  DEFAULT_RMS_THRESHOLD,
-  createDetector,
-  isUsable,
-  windowSizeFor,
-} from '../src/audio/pitch';
+import { DEFAULT_RMS_THRESHOLD, createDetector, isUsable, windowSizeFor } from '../src/audio/pitch';
 import { cents } from '../src/music/notes';
 import { tone } from './helpers/signal';
 
@@ -48,5 +43,14 @@ describe('pitch detection', () => {
     expect(isUsable({ ...ok, clarity: 0.8 }, DEFAULT_RMS_THRESHOLD)).toBe(false);
     expect(isUsable({ ...ok, freq: 20 }, DEFAULT_RMS_THRESHOLD)).toBe(false);
     expect(isUsable({ ...ok, freq: 1500 }, DEFAULT_RMS_THRESHOLD)).toBe(false);
+  });
+
+  it('with a target, accepts less clear readings near it or its octave', () => {
+    const r = { freq: 330, clarity: 0.85, rms: 0.1 };
+    expect(isUsable(r, DEFAULT_RMS_THRESHOLD, 329.63)).toBe(true);
+    expect(isUsable({ ...r, freq: 300 }, DEFAULT_RMS_THRESHOLD, 329.63)).toBe(true); // flat string
+    expect(isUsable({ ...r, freq: 165 }, DEFAULT_RMS_THRESHOLD, 82.41)).toBe(true); // 2nd harmonic
+    expect(isUsable({ ...r, freq: 220 }, DEFAULT_RMS_THRESHOLD, 329.63)).toBe(false); // far off
+    expect(isUsable({ ...r, clarity: 0.7 }, DEFAULT_RMS_THRESHOLD, 329.63)).toBe(false);
   });
 });

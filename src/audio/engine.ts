@@ -24,6 +24,7 @@ export const FRAME_MS = 40;
 
 export class Engine {
   rmsThreshold = DEFAULT_RMS_THRESHOLD;
+  target: number | null = null; // locked string's frequency
   private detect: Detect;
   private smoother = new Smoother();
   private timer: ReturnType<typeof setInterval> | undefined;
@@ -67,7 +68,7 @@ export class Engine {
     if (this.paused) return;
     const raw = this.detect(this.source.read(this.size), this.source.sampleRate);
     const t = this.now();
-    const freq = isUsable(raw, this.rmsThreshold)
+    const freq = isUsable(raw, this.rmsThreshold, this.target)
       ? this.smoother.push(raw.freq, t)
       : this.smoother.current(t);
     this.onFrame({ raw, freq, windowSize: this.size, sampleRate: this.source.sampleRate });

@@ -18,9 +18,20 @@ function tunerConfig(tuning: Tuning, settings: Settings, lockedIndex: number | n
   };
 }
 
-function windowFor(tuning: Tuning, settings: Settings): WindowSize {
+export function targetFreq(tuning: Tuning, settings: Settings, lockedIndex: number | null) {
+  if (lockedIndex === null || settings.mode === 'chromatic') return null;
+  return noteToFreq(tuning.notes[lockedIndex], settings.a4);
+}
+
+// A locked string only needs a window long enough for its own note, so high strings react faster.
+export function windowFor(
+  tuning: Tuning,
+  settings: Settings,
+  lockedIndex: number | null,
+): WindowSize {
   if (settings.mode === 'chromatic') return windowSizeFor(null);
-  return windowSizeFor(Math.min(...tuning.notes.map((n) => noteToFreq(n, settings.a4))));
+  const lowest = Math.min(...tuning.notes.map((n) => noteToFreq(n, settings.a4)));
+  return windowSizeFor(targetFreq(tuning, settings, lockedIndex) ?? lowest);
 }
 
 export function useTunerEngine(
@@ -36,7 +47,9 @@ export function useTunerEngine(
 
   useEffect(() => {
     tuner.configure(tunerConfig(tuning, settings, lockedIndex));
-    engine.current?.setWindowSize(windowFor(tuning, settings));
+    if (!engine.current) return;
+    engine.current.setWindowSize(windowFor(tuning, settings, lockedIndex));
+    engine.current.target = targetFreq(tuning, settings, lockedIndex);
   }, [tuning, settings, lockedIndex]);
 
   useEffect(() => {
@@ -47,8 +60,9 @@ export function useTunerEngine(
         setFrame(f);
         setView(tuner.update(f.freq, performance.now()));
       },
-      windowFor(tuning, settings),
+      windowFor(tuning, settings, lockedIndex),
     );
+    e.target = targetFreq(tuning, settings, lockedIndex);
     engine.current = e;
     e.start();
     return () => {

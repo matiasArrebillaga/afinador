@@ -38,7 +38,7 @@ export function TunerScreen(p: TunerScreenProps) {
   return (
     <main
       class={`screen tuner${state}`}
-      style={{ '--c': meterColor(view?.cents ?? null, !!view?.outOfRange) }}
+      style={{ '--c': meterColor(view?.cents ?? null, !!view?.outOfRange, !!view?.inTune) }}
     >
       <header>
         <h1 onClick={p.onTitleTap}>AFINADOR</h1>

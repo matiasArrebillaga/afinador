@@ -22,6 +22,11 @@ describe('meter color', () => {
     expect(meterColor(3, false)).toBe('var(--ok)');
     expect(meterColor(9, false)).toBe('hsl(59 90% 62%)');
   });
+
+  it('stays lime while the tuner holds in-tune past 3 cents (hysteresis)', () => {
+    expect(meterColor(4.5, false, true)).toBe('var(--ok)');
+    expect(meterColor(4.5, false, false)).not.toBe('var(--ok)');
+  });
 });
 
 describe('arc geometry', () => {
@@ -34,11 +39,21 @@ describe('arc geometry', () => {
     expect(arcAngle(-500)).toBe(-90);
   });
 
-  it('draws the trace from the center toward the dot', () => {
-    expect(traceDash(0)).toBe('0 90 0 360');
-    expect(traceDash(45)).toBe('0 90 45 360');
-    expect(traceDash(-45)).toBe('0 45 45 360');
-    expect(traceDash(90)).toBe('0 90 90 360');
-    expect(traceDash(-90)).toBe('0 0 90 360');
+  it('draws each side of the trace from the center toward the dot', () => {
+    expect(traceDash(0, 1)).toBe('0 90 0 360');
+    expect(traceDash(0, -1)).toBe('0 90 0 360');
+    expect(traceDash(45, 1)).toBe('0 90 45 360');
+    expect(traceDash(45, -1)).toBe('0 90 0 360');
+    expect(traceDash(-45, -1)).toBe('0 45 45 360');
+    expect(traceDash(-45, 1)).toBe('0 90 0 360');
+    expect(traceDash(-90, -1)).toBe('0 0 90 360');
+  });
+
+  it('keeps each side anchored at the center so a zero crossing never slides', () => {
+    // gap + dash = 90 on the left side, so interpolating both keeps the end at the center.
+    for (const a of [-90, -30, 0, 30]) {
+      const [, gap, dash] = traceDash(a, -1).split(' ').map(Number);
+      expect(gap + dash).toBe(90);
+    }
   });
 });

@@ -20,11 +20,12 @@ export function meterHue(absCents: number): number {
   return HUE_STOPS[HUE_STOPS.length - 1][1];
 }
 
-export function meterColor(cents: number | null, outOfRange: boolean): string {
+// inTune follows the tuner's hysteresis, so the dot stays lime as long as the arc does.
+export function meterColor(cents: number | null, outOfRange: boolean, inTune = false): string {
   if (cents === null) return 'var(--fg)';
   if (outOfRange) return 'var(--far)';
   const abs = Math.abs(cents);
-  if (abs <= HUE_STOPS[0][0]) return 'var(--ok)';
+  if (inTune || abs <= HUE_STOPS[0][0]) return 'var(--ok)';
   return `hsl(${meterHue(abs).toFixed(0)} 90% 62%)`;
 }
 
@@ -34,9 +35,14 @@ export function arcAngle(cents: number | null): number {
   return (Math.max(-RANGE, Math.min(RANGE, cents)) / RANGE) * 90;
 }
 
-/** Dash pattern on the arc (pathLength 180, 1 unit = 1°) drawing from the center to the dot. */
-export function traceDash(angle: number): string {
-  return `0 ${90 + Math.min(0, angle)} ${Math.abs(angle)} 360`;
+/**
+ * Dash pattern on the arc (pathLength 180, 1 unit = 1°) for one side of the trace, from the
+ * center toward the dot. One path per side keeps each anchored at the center, so crossing zero
+ * shrinks one side and grows the other instead of sliding a single segment across.
+ */
+export function traceDash(angle: number, side: 1 | -1): string {
+  const len = Math.max(0, side * angle);
+  return `0 ${side === 1 ? 90 : 90 - len} ${len} 360`;
 }
 
 export function ArcMeter({
@@ -64,12 +70,15 @@ export function ArcMeter({
         <path class="base" d={ARC} pathLength={180} />
         <path class="lock" d={ARC} pathLength={180} />
         <line class="zero" x1={100} y1={4} x2={100} y2={16} />
-        <path
-          class="trace"
-          d={ARC}
-          pathLength={180}
-          style={{ strokeDasharray: traceDash(angle) }}
-        />
+        {([-1, 1] as const).map((side) => (
+          <path
+            key={side}
+            class="trace"
+            d={ARC}
+            pathLength={180}
+            style={{ strokeDasharray: traceDash(angle, side) }}
+          />
+        ))}
         {/* Rotating the group around the arc center moves the dot along the curve. */}
         <g class="dot" style={{ transform: `rotate(${angle}deg)` }}>
           <circle cx={100} cy={10} r={5} />

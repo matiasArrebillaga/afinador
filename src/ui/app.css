@@ -534,9 +534,18 @@ h1 {
   .arc .dot,
   .arc.idle .dot,
   .seg-ind,
-  .string-line,
-  .sheet {
+  .string-line {
     transition-property: opacity;
+  }
+  /* No slide: the sheet stays in place and fades. */
+  .sheet {
+    transform: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .sheet-wrap.open .sheet {
+    transform: none;
+    opacity: 1;
   }
   .in-tune .arc .dot circle,
   .start .arc .base {

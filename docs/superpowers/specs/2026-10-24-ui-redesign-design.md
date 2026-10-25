@@ -10,8 +10,7 @@ The current UI (ruler meter, chips, pill badges, radial glow, rounded borders) w
 where the note and how far off it is read first, and everything that can move meaningfully is
 animated.
 
-Out of scope: audio/pitch logic, tuner state, storage, strings/i18n content (except removing the
-now-unused status texts from the tuner screen), new features.
+Out of scope: audio/pitch logic, tuner state, storage, strings/i18n content, new features.
 
 ## Visual system
 
@@ -47,7 +46,9 @@ Top to bottom:
 5. **Strings**: plain text notes spread across the width. The active string is white with a lime
    underline; confirmed strings are lime (replaces the ✓ dot). Chromatic mode: empty spacer.
 
-The `aria-live` region stays, but announces the cents value instead of the status text.
+The status text ("tensar/aflojar/afinada") is no longer visible but stays in a visually-hidden
+`aria-live="polite"` element, so screen readers still get it only when the state changes
+(announcing cents every 40ms would be noise).
 The chromatic badge above the note is removed (the header already says it).
 
 ### Meter color
@@ -97,12 +98,11 @@ Curves: existing `--ease-out: cubic-bezier(0.23, 1, 0.32, 1)` and
 ## Code changes
 
 - `src/ui/components/Meter.tsx` → rewrite as `ArcMeter` (SVG); keep `meterColor`/`meterHue` exports.
-- `src/ui/screens/TunerScreen.tsx`: new layout, drop `statusText` usage and the chromatic badge,
-  Hz under cents.
+- `src/ui/screens/TunerScreen.tsx`: new layout, status text moves to a visually-hidden live
+  region, chromatic badge removed, Hz under cents.
 - `src/ui/components/StringList.tsx`: shared sliding underline, lime confirmed state.
 - `src/ui/components/Segmented.tsx`: indicator becomes an underline (markup mostly unchanged).
 - `src/ui/screens/TuningPicker.tsx`, `StartScreen.tsx`: markup tweaks for the new styles.
-- `src/ui/strings.ts`: remove `status` texts if nothing else uses them.
 - `src/ui/app.css`: full rewrite.
 - `tests/meter.test.ts`: update for lime in-tune color/hue.
 

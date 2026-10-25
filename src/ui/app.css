@@ -1,15 +1,14 @@
-/* Direction B (ruler): hairlines, one gliding needle, color by distance from the note. */
+/* Minimal arc: white on black, one dot on a semicircle, lime when in tune. */
 :root {
-  --bg: #0b0c0d;
-  --panel: #121415;
-  --raised: #1a1d1e;
-  --fg: #eef0ee;
-  --dim: #7c817e;
-  --faint: #2a2d2c;
-  --ok: #5ee38f;
-  --ok-glow: rgba(94, 227, 143, 0.18);
-  --far: #ff6b5a;
-  --font: ui-monospace, Menlo, Consolas, monospace;
+  --bg: #0b0b0b;
+  --fg: #f2f2f0;
+  --dim: #555;
+  --faint: #2a2a2a;
+  --ok: #c6ff3d;
+  --far: #ff5a4e;
+  --c: var(--fg);
+  --sans: 'Helvetica Neue', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, Menlo, Consolas, monospace;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   color-scheme: dark;
@@ -24,7 +23,7 @@ body {
   height: 100%;
   background: var(--bg);
   color: var(--fg);
-  font-family: var(--font);
+  font-family: var(--sans);
 }
 body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
@@ -38,30 +37,24 @@ button {
   font: inherit;
   color: inherit;
   background: none;
-  border: 1px solid var(--faint);
-  border-radius: 12px;
+  border: 0;
+  border-radius: 0;
   min-width: 48px;
   min-height: 48px;
   padding: 0 12px;
   touch-action: manipulation;
   cursor: pointer;
   transition:
-    background-color 150ms ease,
     color 150ms ease,
-    border-color 150ms ease,
+    opacity 200ms ease,
     transform 120ms var(--ease-out);
 }
 button:active {
   transform: scale(0.97);
 }
 button:focus-visible {
-  outline: 2px solid var(--ok);
+  outline: 1px solid var(--ok);
   outline-offset: 2px;
-}
-button[aria-pressed='true'] {
-  background: var(--fg);
-  color: var(--bg);
-  border-color: var(--fg);
 }
 button:disabled {
   opacity: 0.3;
@@ -71,9 +64,10 @@ input {
   font-size: 16px;
   color: inherit;
   background: none;
-  border: 1px solid var(--faint);
-  border-radius: 12px;
-  padding: 12px;
+  border: 0;
+  border-bottom: 1px solid var(--faint);
+  border-radius: 0;
+  padding: 12px 0;
   width: 100%;
   -webkit-user-select: text;
   user-select: text;
@@ -85,21 +79,26 @@ input {
   min-height: 100dvh;
   padding: 20px;
 }
-.row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.dim {
-  color: var(--dim);
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .error {
-  border: 1px solid var(--far);
-  border-radius: 12px;
-  padding: 12px;
+  font-size: 13px;
+  text-align: center;
   color: var(--far);
 }
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Header */
 header {
   display: flex;
   justify-content: space-between;
@@ -107,63 +106,132 @@ header {
   gap: 8px;
 }
 h1 {
-  font-size: 12px;
-  font-weight: 500;
+  flex: none;
+  font-size: 11px;
+  font-weight: 400;
   letter-spacing: 0.3em;
   color: var(--dim);
 }
-.chip {
-  border-radius: 99px;
-  font-size: 13px;
-}
-
-.start {
-  justify-content: center;
+.pick {
+  display: flex;
   align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0;
+  font-size: 12px;
+  letter-spacing: 0.08em;
 }
-.start-btn {
-  width: 160px;
-  height: 160px;
-  font-size: 56px;
-  border-radius: 50%;
+.pick-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pick small {
+  flex: none;
+  color: var(--dim);
 }
 
-/* Tuner */
+/* Arc meter */
 .tuner {
-  --c: var(--fg);
   position: relative;
-  overflow: hidden;
   justify-content: space-between;
 }
-.tuner::before {
-  content: '';
-  position: absolute;
-  inset: -40% -20% auto;
-  height: 70%;
-  background: radial-gradient(closest-side, var(--c), transparent);
-  opacity: 0.16;
-  pointer-events: none;
-  transition: opacity 200ms ease;
+.dial {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
-.tuner.far::before {
-  opacity: 0.1;
-}
-.tuner > * {
+.arc {
   position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
 }
-.readout {
-  text-align: center;
+.arc svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
 }
+.arc path {
+  fill: none;
+}
+.arc .base {
+  stroke: var(--faint);
+  stroke-width: 1;
+}
+.arc .zero {
+  stroke: var(--dim);
+  stroke-width: 1;
+}
+/* Readings arrive every 40 ms; short transitions retarget mid-flight instead of restarting. */
+.arc .trace {
+  stroke: var(--c);
+  stroke-opacity: 0.4;
+  stroke-width: 3;
+  transition:
+    stroke-dasharray 120ms var(--ease-out),
+    stroke 200ms ease;
+}
+/* Lime arc drawn from the center to both ends when the note locks in tune. */
+.arc .lock {
+  stroke: var(--ok);
+  stroke-width: 1.5;
+  stroke-dasharray: 0 90 0 360;
+  transition: stroke-dasharray 300ms var(--ease-out);
+}
+.in-tune .arc .lock {
+  stroke-dasharray: 0 0 180 360;
+}
+.arc .dot {
+  transform-box: view-box;
+  transform-origin: 100px 100px;
+  transition:
+    transform 120ms var(--ease-out),
+    opacity 200ms ease;
+}
+.arc.idle .dot {
+  opacity: 0.25;
+  transition:
+    transform 400ms var(--ease-out),
+    opacity 400ms ease;
+}
+.arc .dot circle {
+  fill: var(--c);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: fill 200ms ease;
+}
+.in-tune .arc .dot circle {
+  animation: pulse 300ms var(--ease-out);
+}
+@keyframes pulse {
+  40% {
+    transform: scale(1.4);
+  }
+}
+.arc-center {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+/* Note + numbers */
 .note {
-  font-size: min(30vw, 24dvh);
-  font-weight: 300;
-  line-height: 1;
+  font-size: min(30vw, 20dvh, 140px);
+  font-weight: 200;
+  line-height: 0.8;
   letter-spacing: -0.04em;
   white-space: nowrap;
   transition: color 200ms ease;
 }
 .note sub {
-  font-size: 0.27em;
+  vertical-align: baseline;
+  font-size: 0.25em;
   color: var(--dim);
   letter-spacing: 0;
 }
@@ -175,227 +243,120 @@ h1 {
   from {
     opacity: 0;
     transform: translateY(6px);
+    filter: blur(4px);
   }
 }
-.status {
-  min-height: 22px;
-  margin-top: 10px;
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--c);
-}
-.status:not(:empty) {
-  animation: fade-in 200ms var(--ease-out);
-}
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-}
-.in-tune .note,
-.in-tune .status {
+.in-tune .note {
   color: var(--ok);
 }
-
-.meter {
-  position: relative;
-  height: 92px;
+/* The "—" placeholder at full size reads as a bar; keep it in the background. */
+.tuner.idle .note {
+  color: var(--faint);
 }
-.zone {
-  position: absolute;
-  left: 47%;
-  width: 6%;
-  top: 8px;
-  bottom: 26px;
-  border-radius: 6px;
-  background: var(--faint);
-  opacity: 0.6;
-  transition:
-    background-color 200ms ease,
-    box-shadow 200ms ease,
-    opacity 200ms ease;
-}
-.in-tune .zone {
-  background: var(--ok-glow);
-  box-shadow: 0 0 24px var(--ok-glow);
-  opacity: 1;
-}
-.band {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 26px;
-  height: 3px;
-  border-radius: 3px;
-  opacity: 0.55;
-  background: linear-gradient(
-    90deg,
-    #ff5a4e,
-    #ffb547 30%,
-    var(--ok) 47%,
-    var(--ok) 53%,
-    #ffb547 70%,
-    #ff5a4e
-  );
-}
-.ticks {
-  position: absolute;
-  inset: 8px 0 26px;
-}
-.ticks i {
-  position: absolute;
-  bottom: 0;
-  width: 1px;
-  background: var(--faint);
-}
-.ticks i.major {
-  background: var(--dim);
-}
-.ticks i.zero {
-  background: var(--fg);
-  width: 2px;
-  margin-left: -0.5px;
-}
-.labels {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  font-size: 10px;
-  color: var(--dim);
+.readout {
+  text-align: center;
+  font-family: var(--mono);
   font-variant-numeric: tabular-nums;
 }
-.labels span {
-  position: absolute;
-  transform: translateX(-50%);
-}
-.track {
-  position: absolute;
-  inset: 0 0 20px;
-}
-/* Readings arrive every 40 ms; a short transition retargets smoothly instead of restarting. */
-.needle {
-  position: absolute;
-  inset: 0;
-  transition:
-    transform 120ms var(--ease-out),
-    opacity 200ms ease;
-  will-change: transform;
-}
-.needle.idle {
-  opacity: 0.25;
-}
-.needle::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  margin-left: -1.5px;
-  border-radius: 3px;
-  background: var(--c);
-  box-shadow: 0 0 10px var(--c);
-  transition: box-shadow 200ms ease;
-}
-.needle::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: -5px;
-  width: 11px;
-  height: 11px;
-  margin-left: -5.5px;
-  border-radius: 50%;
-  background: var(--c);
-}
-.in-tune .needle::before {
-  box-shadow: 0 0 16px var(--c);
+.cents {
+  min-height: 20px;
+  font-size: 15px;
+  color: var(--c);
+  transition: color 200ms ease;
 }
 .hz {
-  text-align: center;
-  font-size: 13px;
-  min-height: 16px;
+  min-height: 14px;
+  margin-top: 4px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
   color: var(--dim);
-  font-variant-numeric: tabular-nums;
-}
-.hz b {
-  color: var(--fg);
-  font-weight: 500;
 }
 
+/* Strings */
 .strings {
+  position: relative;
+}
+.strings ol {
   list-style: none;
   display: flex;
-  gap: 6px;
 }
 .strings li {
   flex: 1;
+  min-width: 0;
 }
 .strings button {
-  position: relative;
   width: 100%;
+  min-width: 0;
   padding: 0;
+  font-family: var(--mono);
   font-size: 15px;
   color: var(--dim);
+  transition: color 220ms ease;
+}
+.strings button.done {
+  color: var(--ok);
 }
 .strings button[aria-pressed='true'] {
-  background: var(--c);
-  color: var(--bg);
-  border-color: var(--c);
-  transition: none;
+  color: var(--fg);
 }
-.strings .ok {
+.string-line {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--ok);
-  font-size: 0;
-}
-.strings button[aria-pressed='true'] .ok {
-  background: var(--bg);
-}
-
-.resume {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  border: 0;
-  border-radius: 0;
-  background: rgba(11, 12, 13, 0.85);
-  font-size: 56px;
-}
-
-/* Picker: bottom sheet over the tuner */
-.pick {
+  left: 0;
+  bottom: 6px;
+  width: calc(100% / var(--count));
   display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 14px;
+  justify-content: center;
+  pointer-events: none;
+  transition:
+    transform 220ms var(--ease-out),
+    opacity 200ms ease;
 }
-.pick small {
-  color: var(--dim);
-}
-.badge {
-  display: inline-block;
-  margin-bottom: 8px;
-  padding: 4px 10px;
-  border: 1px solid var(--faint);
-  border-radius: 99px;
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--dim);
+.string-line::after {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--ok);
 }
 .strings-spacer {
   min-height: 48px;
 }
+
+/* Resume overlay */
+.resume {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgba(11, 11, 11, 0.9);
+  font-size: 48px;
+  animation: fade-in 200ms ease;
+}
+
+/* Start */
+.start {
+  justify-content: center;
+  align-items: center;
+}
+.start .arc .base {
+  stroke-dasharray: 180;
+  animation: draw 600ms var(--ease-out) both;
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 180;
+  }
+}
+.start .arc .dot,
+.start .arc .zero {
+  display: none;
+}
+.start-btn {
+  font-size: 48px;
+}
+.start-btn.leaving {
+  opacity: 0;
+}
+
+/* Picker: bottom sheet over the tuner */
 .sheet-wrap {
   position: fixed;
   inset: 0;
@@ -408,7 +369,7 @@ h1 {
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.7);
   opacity: 0;
   transition: opacity 300ms ease;
 }
@@ -424,10 +385,9 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 10px 18px calc(20px + env(safe-area-inset-bottom));
-  background: var(--raised);
+  padding: 10px 20px calc(20px + env(safe-area-inset-bottom));
+  background: var(--bg);
   border-top: 1px solid var(--faint);
-  border-radius: 22px 22px 0 0;
   transform: translateY(100%);
   transition: transform 320ms var(--ease-drawer);
 }
@@ -435,72 +395,71 @@ h1 {
   transform: translateY(0);
 }
 .grab {
-  width: 36px;
-  height: 4px;
-  border-radius: 4px;
-  background: var(--faint);
   align-self: center;
+  width: 32px;
+  height: 1px;
+  margin: 6px 0;
+  background: var(--dim);
 }
 .sheet h2,
 .label {
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
+  font-weight: 400;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--dim);
 }
 .label {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
+/* Segmented: words with a sliding underline */
 .seg {
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--count), 1fr);
-  padding: 4px;
-  background: var(--panel);
-  border: 1px solid var(--faint);
-  border-radius: 14px;
+  border-bottom: 1px solid var(--faint);
 }
 .seg-ind {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
-  left: 4px;
-  width: calc((100% - 8px) / var(--count));
+  left: 0;
+  bottom: -1px;
+  width: calc(100% / var(--count));
+  height: 1px;
   background: var(--fg);
-  border-radius: 10px;
   transition: transform 220ms var(--ease-out);
 }
 .seg button {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 44px;
+  min-height: 48px;
   padding: 8px 4px;
-  border: 0;
-  border-radius: 10px;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--dim);
 }
 .seg button[aria-pressed='true'] {
-  background: none;
-  color: var(--bg);
+  color: var(--fg);
 }
 
+/* Tuning rows */
 .tuning-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   overflow-y: auto;
   min-height: 0;
-  animation: list-in 200ms var(--ease-out);
 }
-@keyframes list-in {
+.tuning-list > * {
+  animation: row-in 200ms var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 8) * 20ms);
+}
+.tuning-list > li {
+  border-bottom: 1px solid var(--faint);
+}
+@keyframes row-in {
   from {
     opacity: 0;
     transform: translateY(6px);
@@ -509,59 +468,39 @@ h1 {
 .tuning {
   width: 100%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 14px;
+  gap: 12px;
+  padding: 14px 0;
   text-align: left;
 }
-.tuning[aria-pressed='true'] {
-  background: none;
-  color: var(--fg);
-  border-color: var(--ok);
-}
 .tuning .name {
-  display: block;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 15px;
 }
 .tuning .notes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 6px;
-}
-.tuning .notes span {
-  padding: 2px 5px;
-  border: 1px solid var(--faint);
-  border-radius: 6px;
+  font-family: var(--mono);
   font-size: 11px;
   color: var(--dim);
+  white-space: nowrap;
 }
 .tuning .mark {
   flex: none;
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid var(--faint);
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  font-size: 12px;
-  color: transparent;
-  transition:
-    background-color 150ms ease,
-    border-color 150ms ease,
-    color 150ms ease;
+  background: var(--ok);
+  transform: scale(0);
+  transition: transform 200ms var(--ease-out);
 }
 .tuning[aria-pressed='true'] .mark {
-  background: var(--ok);
-  border-color: var(--ok);
-  color: var(--bg);
+  transform: scale(1);
 }
 .chroma {
-  padding: 18px;
-  border: 1px dashed var(--faint);
-  border-radius: 14px;
+  padding: 24px 0;
   text-align: center;
   font-size: 13px;
   line-height: 1.6;
@@ -570,32 +509,36 @@ h1 {
 .chroma b {
   display: block;
   margin-bottom: 6px;
-  font-size: 34px;
-  font-weight: 300;
-  letter-spacing: 0.1em;
+  font-family: var(--mono);
+  font-size: 28px;
+  font-weight: 400;
   color: var(--fg);
 }
 
 .debug pre {
+  font-family: var(--mono);
   font-size: 16px;
   line-height: 1.6;
 }
-.debug input {
-  width: 100%;
-}
 
 @media (prefers-reduced-motion: reduce) {
-  .needle {
-    transition: opacity 200ms ease;
+  .arc .trace,
+  .arc .lock,
+  .arc .dot,
+  .arc.idle .dot,
+  .seg-ind,
+  .string-line,
+  .sheet {
+    transition-property: opacity;
   }
-  .note-inner,
-  .status:not(:empty),
-  .tuning-list {
+  .in-tune .arc .dot circle,
+  .start .arc .base {
     animation: none;
   }
-  .sheet,
-  .seg-ind {
-    transition: none;
+  .note-inner,
+  .tuning-list > *,
+  .resume {
+    animation: fade-in 200ms ease both;
   }
   button:active {
     transform: none;

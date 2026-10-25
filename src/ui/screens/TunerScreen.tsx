@@ -1,8 +1,7 @@
 import { displayNote, type NoteNaming } from '../../music/notes';
 import type { TunerView } from '../../music/tuner';
 import type { Tuning } from '../../music/tunings';
-import { InstrumentIcon } from '../components/InstrumentIcon';
-import { Meter, meterColor } from '../components/ArcMeter';
+import { ArcMeter, meterColor } from '../components/ArcMeter';
 import { StringList } from '../components/StringList';
 import { S, tuningLabel } from '../strings';
 
@@ -18,19 +17,24 @@ export interface TunerScreenProps {
   onTitleTap(): void;
 }
 
+// Not shown: only read out by screen readers, and only when it changes.
 function statusText(view: TunerView): string {
   if (view.outOfRange) return S.status.far;
   if (view.inTune) return S.status.inTune;
   return view.cents < 0 ? S.status.up : S.status.down;
 }
 
+function centsText(view: TunerView): string {
+  const c = Math.round(view.cents);
+  if (view.outOfRange) return c < 0 ? '<−50' : '>+50';
+  return c > 0 ? `+${c}` : c < 0 ? `−${-c}` : '0';
+}
+
 export function TunerScreen(p: TunerScreenProps) {
   const { view } = p;
-  const state = !view ? '' : view.outOfRange ? ' far' : view.inTune ? ' in-tune' : '';
+  const state = !view ? ' idle' : view.outOfRange ? ' far' : view.inTune ? ' in-tune' : '';
   const shown = view ? displayNote(view.note, p.naming) : '—';
   const [, name, octave] = /^(.*?)(-?\d*)$/.exec(shown)!;
-  const c = view ? Math.round(view.cents) : 0;
-  const sign = c > 0 ? '+' : c < 0 ? '−' : '±';
   return (
     <main
       class={`screen tuner${state}`}
@@ -38,20 +42,14 @@ export function TunerScreen(p: TunerScreenProps) {
     >
       <header>
         <h1 onClick={p.onTitleTap}>AFINADOR</h1>
-        <button class="chip pick" onClick={p.onOpenPicker}>
-          {p.chromatic ? (
-            <>
-              <InstrumentIcon kind="chromatic" height={28} /> {S.kinds.chromatic}
-            </>
-          ) : (
-            <>
-              <InstrumentIcon kind={p.tuning.instrument} height={18} /> {tuningLabel(p.tuning)}{' '}
-              <small>
-                · {S.kinds[p.tuning.instrument]} {p.tuning.notes.length}
-              </small>
-            </>
-          )}{' '}
-          ▾
+        <button class="pick" onClick={p.onOpenPicker}>
+          <span class="pick-text">{p.chromatic ? S.kinds.chromatic : tuningLabel(p.tuning)}</span>
+          {!p.chromatic && (
+            <small>
+              {S.kinds[p.tuning.instrument]} {p.tuning.notes.length}
+            </small>
+          )}
+          <span aria-hidden="true">▾</span>
         </button>
       </header>
       {p.suspended && (
@@ -59,29 +57,23 @@ export function TunerScreen(p: TunerScreenProps) {
           ▶
         </button>
       )}
-      <div class="readout">
-        {p.chromatic && <span class="badge">{S.kinds.chromatic}</span>}
-        <div class="note">
-          {/* key remounts the span so the entry animation plays on every note change */}
-          <span key={shown} class="note-inner">
-            {name}
-            <sub>{octave}</sub>
-          </span>
+      <div class="dial">
+        <ArcMeter cents={view?.cents ?? null}>
+          <div class="note">
+            {/* key remounts the span so the entry animation plays on every note change */}
+            <span key={shown} class="note-inner">
+              {name}
+              <sub>{octave}</sub>
+            </span>
+          </div>
+        </ArcMeter>
+        <div class="readout">
+          <div class="cents">{view && centsText(view)}</div>
+          <div class="hz">{view && `${view.freq.toFixed(1)} Hz`}</div>
+          <div class="sr-only" aria-live="polite">
+            {view && statusText(view)}
+          </div>
         </div>
-        <div class="status" aria-live="polite">
-          {view && statusText(view)}
-        </div>
-      </div>
-      <Meter cents={view?.cents ?? null} />
-      <div class="hz">
-        {view ? (
-          <>
-            <b>{view.freq.toFixed(1)}</b> Hz ·{' '}
-            {view.outOfRange ? (c < 0 ? '<−50' : '>+50') : `${sign}${Math.abs(c)}`}
-          </>
-        ) : (
-          ' '
-        )}
       </div>
       {p.chromatic ? (
         <div class="strings-spacer" />

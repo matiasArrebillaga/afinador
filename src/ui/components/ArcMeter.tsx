@@ -1,6 +1,8 @@
+import type { ComponentChildren } from 'preact';
+
 const RANGE = 50;
-const TICKS = Array.from({ length: 21 }, (_, i) => i * 5 - RANGE);
-const LABELS = [-50, -25, 0, 25, 50];
+// ∩ semicircle in SVG units: center (100,100), radius 90. pathLength 180 makes 1 unit = 1°.
+const ARC = 'M10 100 A90 90 0 0 1 190 100';
 // Hue stops by |cents|: lime when in tune, amber mid-way, red far off.
 const HUE_STOPS: readonly [number, number][] = [
   [3, 78],
@@ -37,42 +39,33 @@ export function traceDash(angle: number): string {
   return `0 ${90 + Math.min(0, angle)} ${Math.abs(angle)} 360`;
 }
 
-const tickHeight = (c: number) => (c === 0 ? 100 : c % 25 === 0 ? 55 : c % 10 === 0 ? 38 : 22);
-
-export function Meter({ cents }: { cents: number | null }) {
-  const clamped = cents === null ? 0 : Math.max(-RANGE, Math.min(RANGE, cents));
+export function ArcMeter({
+  cents,
+  children,
+}: {
+  cents: number | null;
+  children?: ComponentChildren;
+}) {
+  const angle = arcAngle(cents);
   return (
     <div
-      class="meter"
+      class={cents === null ? 'arc idle' : 'arc'}
       role="meter"
       aria-valuemin={-RANGE}
       aria-valuemax={RANGE}
-      aria-valuenow={clamped}
+      aria-valuenow={Math.round((angle / 90) * RANGE)}
     >
-      <div class="zone" />
-      <div class="band" />
-      <div class="ticks">
-        {TICKS.map((c) => (
-          <i
-            key={c}
-            class={c === 0 ? 'zero' : c % 25 === 0 ? 'major' : undefined}
-            style={{ left: `${c + RANGE}%`, height: `${tickHeight(c)}%` }}
-          />
-        ))}
-      </div>
-      <div class="track">
-        <div
-          class={cents === null ? 'needle idle' : 'needle'}
-          style={{ transform: `translateX(${clamped + RANGE}%)` }}
-        />
-      </div>
-      <div class="labels">
-        {LABELS.map((c) => (
-          <span key={c} style={{ left: `${c + RANGE}%` }}>
-            {c > 0 ? `+${c}` : c < 0 ? `−${-c}` : '0'}
-          </span>
-        ))}
-      </div>
+      <svg viewBox="0 0 200 110" aria-hidden="true">
+        <path class="base" d={ARC} pathLength={180} />
+        <path class="lock" d={ARC} pathLength={180} />
+        <line class="zero" x1={100} y1={4} x2={100} y2={16} />
+        <path class="trace" d={ARC} pathLength={180} style={{ strokeDasharray: traceDash(angle) }} />
+        {/* Rotating the group around the arc center moves the dot along the curve. */}
+        <g class="dot" style={{ transform: `rotate(${angle}deg)` }}>
+          <circle cx={100} cy={10} r={5} />
+        </g>
+      </svg>
+      <div class="arc-center">{children}</div>
     </div>
   );
 }

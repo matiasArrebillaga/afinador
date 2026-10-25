@@ -30,8 +30,13 @@ segundo plano, tema claro, guitarra de 12 cuerdas.
   Independiente del idioma de la UI. Mapeo: C D E F G A B → Do Re Mi Fa Sol La Si; sostenido `#`.
 - **Solo tema oscuro**, siempre (ignora la preferencia del sistema).
 - Tipografía: monoespaciada del sistema (`ui-monospace, Menlo, Consolas, monospace`).
-- **Estética brutalista: se define al arrancar la fase 2** con 2–3 maquetas visuales para elegir.
-  Fases 0–1 usan una pantalla de debug sin estilo.
+- **Estética "Regla"** (elegida en fase 2 entre 3 maquetas): fondo casi negro, líneas finas de 1 px,
+  esquinas redondeadas, nota en trazo fino. El **color indica la distancia** a la nota: rojo (≥ 35 cents)
+  → ámbar (~15) → verde (≤ 3), interpolado en tono; lo toman la aguja, un brillo suave de fondo, el
+  estado y la cuerda activa. Fuera de rango: rojo fijo. Fases 0–1 usan una pantalla de debug sin estilo.
+- **Animación:** la aguja se desliza con una transición de 120 ms (las lecturas llegan cada 40 ms y la
+  transición retoma desde donde va); al cambiar de nota, la nueva entra con un fundido de 180 ms; los
+  cambios de color duran 200 ms. Con "reducir movimiento" la aguja salta y solo quedan los fundidos.
 - Mobile-first, una mano, legible a 1 m. Respeta `env(safe-area-inset-*)`.
 
 ---
@@ -123,8 +128,9 @@ interface Settings {
 
 - **Nota detectada**: lo más grande de la pantalla, según `noteNaming`.
 - **Hz** chico debajo, un decimal (`82.4 Hz`).
-- **Medidor** de −50 a +50 cents (forma exacta se decide con las maquetas de fase 2).
-- **Estado**: ↑ (subir), ↓ (bajar), ✓ en color de acento (afinado).
+- **Medidor** de −50 a +50 cents: regla con marcas cada 5 cents (mayores en ±25 y 0), banda de color
+  rojo-ámbar-verde debajo, franja central de ±3 cents que se ilumina al afinar, y una aguja fina.
+- **Estado**: ↑ tensar, ↓ aflojar, ✓ afinada (en verde), "fuera de rango" (en rojo).
 - **Cuerdas** de la afinación activa: la detectada resaltada, ✓ en las ya afinadas en la sesión.
 - **Nombre de la afinación**, que abre el selector.
 
@@ -271,4 +277,4 @@ pantalla y volver. Bajo de 5 y 6, guitarra de 7 y 8 e iOS: **solo tests sintéti
 ## 14. Pendientes de decisión
 
 - Nombre definitivo e ícono de la app.
-- Estética brutalista concreta (al arrancar la fase 2).
+- ~~Estética concreta~~ → resuelta: dirección "Regla" (§2).

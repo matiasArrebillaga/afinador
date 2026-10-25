@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useRef, useState } from 'preact/hooks';
 import type { MicErrorKind } from '../../audio/mic';
 import { ArcMeter } from '../components/ArcMeter';
 import { S } from '../strings';
@@ -11,10 +11,15 @@ interface Props {
 // The same arc as the tuner: on success the note appears where ▶ was.
 export function StartScreen({ error, onStart }: Props) {
   const [leaving, setLeaving] = useState(false);
+  // A ref, not state: two taps in the same tick would both see stale state and open two mic streams.
+  const busy = useRef(false);
   async function start() {
+    if (busy.current) return;
+    busy.current = true;
     setLeaving(true);
     await onStart();
-    // Only visible when the mic failed; on success this screen is already gone.
+    // Only reached visibly when the mic failed; on success this screen is already gone.
+    busy.current = false;
     setLeaving(false);
   }
   return (

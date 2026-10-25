@@ -48,18 +48,28 @@ export function ArcMeter({
 }) {
   const angle = arcAngle(cents);
   return (
-    <div
-      class={cents === null ? 'arc idle' : 'arc'}
-      role="meter"
-      aria-valuemin={-RANGE}
-      aria-valuemax={RANGE}
-      aria-valuenow={Math.round((angle / 90) * RANGE)}
-    >
-      <svg viewBox="0 0 200 110" aria-hidden="true">
+    <div class={cents === null ? 'arc idle' : 'arc'}>
+      {/* The meter is the svg alone, and only with a reading: children (note, ▶) stay readable. */}
+      <svg
+        viewBox="0 0 200 110"
+        {...(cents === null
+          ? { 'aria-hidden': true }
+          : {
+              role: 'meter',
+              'aria-valuemin': -RANGE,
+              'aria-valuemax': RANGE,
+              'aria-valuenow': Math.round((angle / 90) * RANGE),
+            })}
+      >
         <path class="base" d={ARC} pathLength={180} />
         <path class="lock" d={ARC} pathLength={180} />
         <line class="zero" x1={100} y1={4} x2={100} y2={16} />
-        <path class="trace" d={ARC} pathLength={180} style={{ strokeDasharray: traceDash(angle) }} />
+        <path
+          class="trace"
+          d={ARC}
+          pathLength={180}
+          style={{ strokeDasharray: traceDash(angle) }}
+        />
         {/* Rotating the group around the arc center moves the dot along the curve. */}
         <g class="dot" style={{ transform: `rotate(${angle}deg)` }}>
           <circle cx={100} cy={10} r={5} />

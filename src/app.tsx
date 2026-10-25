@@ -1,11 +1,20 @@
-import { useRef, useState } from 'preact/hooks';
+import { useMemo, useRef, useState } from 'preact/hooks';
 import { MicError, startMic, type Mic, type MicErrorKind } from './audio/mic';
-import { BUILT_IN_TUNINGS, findTuning } from './music/tunings';
-import { loadSettings, saveSettings, type Settings } from './state/storage';
+import { newTuning } from './music/editor';
+import { BUILT_IN_TUNINGS, findTuning, standardFor, type Tuning } from './music/tunings';
+import {
+  loadSettings,
+  loadTunings,
+  saveSettings,
+  saveTunings,
+  type Settings,
+} from './state/storage';
+import { EditorScreen } from './ui/screens/EditorScreen';
 import { DebugScreen } from './ui/screens/DebugScreen';
 import { StartScreen } from './ui/screens/StartScreen';
 import { TunerScreen } from './ui/screens/TunerScreen';
 import { TuningPicker } from './ui/screens/TuningPicker';
+import { S } from './ui/strings';
 import { useTunerEngine } from './ui/use-tuner';
 
 type Screen = 'tuner' | 'debug';
@@ -21,7 +30,9 @@ export function App() {
   const [lockedIndex, setLockedIndex] = useState<number | null>(null);
   const taps = useRef({ count: 0, at: 0 });
 
-  const tunings = BUILT_IN_TUNINGS;
+  const [userTunings, setUserTunings] = useState(loadTunings);
+  const [editing, setEditing] = useState<{ tuning: Tuning; isNew: boolean } | null>(null);
+  const tunings = useMemo(() => [...BUILT_IN_TUNINGS, ...userTunings], [userTunings]);
   const tuning = findTuning(tunings, settings.activeTuningId);
   const { frame, view, confirmed, engine } = useTunerEngine(mic, tuning, settings, lockedIndex);
 
@@ -32,6 +43,39 @@ export function App() {
       saveSettings(next);
       return next;
     });
+  }
+
+  function persistTunings(next: Tuning[]) {
+    setUserTunings(next);
+    saveTunings(next);
+  }
+
+  function openEditor(t: Tuning, isNew: boolean) {
+    setPickerOpen(false);
+    setEditing({ tuning: t, isNew });
+  }
+
+  function cancelEditor() {
+    setEditing(null);
+    setPickerOpen(true);
+  }
+
+  function saveEdited(t: Tuning) {
+    persistTunings(
+      editing?.isNew ? [...userTunings, t] : userTunings.map((u) => (u.id === t.id ? t : u)),
+    );
+    updateSettings({ activeTuningId: t.id, mode: 'auto' });
+    setEditing(null);
+  }
+
+  function deleteEdited() {
+    if (!editing) return;
+    const gone = editing.tuning;
+    persistTunings(userTunings.filter((u) => u.id !== gone.id));
+    if (settings.activeTuningId === gone.id) {
+      updateSettings({ activeTuningId: standardFor(gone.instrument, gone.notes.length).id });
+    }
+    cancelEditor();
   }
 
   async function start() {
@@ -59,6 +103,17 @@ export function App() {
 
   if (screen === 'debug') {
     return <DebugScreen frame={frame} engine={engine.current} onClose={() => setScreen('tuner')} />;
+  }
+  if (editing) {
+    return (
+      <EditorScreen
+        initial={editing.tuning}
+        naming={settings.noteNaming}
+        onSave={saveEdited}
+        onDelete={editing.isNew ? undefined : deleteEdited}
+        onCancel={cancelEditor}
+      />
+    );
   }
   // Short pause so the selected dot lands before the sheet slides away.
   const closeSoon = () => setTimeout(() => setPickerOpen(false), 160);
@@ -95,6 +150,10 @@ export function App() {
           closeSoon();
         }}
         onClose={() => setPickerOpen(false)}
+        onNew={(instrument, strings) =>
+          openEditor(newTuning(tuning, instrument, strings, S.editor.defaultName), true)
+        }
+        onEdit={(t) => openEditor(t, false)}
       />
     </>
   );

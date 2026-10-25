@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'preact/hooks';
 import { A4_DEFAULT, A4_MAX, A4_MIN, displayNote, type NoteNaming } from '../../music/notes';
-import { STRING_COUNTS, findTuning, tuningsFor, type Tuning } from '../../music/tunings';
+import {
+  STRING_COUNTS,
+  findTuning,
+  tuningsFor,
+  type Instrument,
+  type Tuning,
+} from '../../music/tunings';
 import { InstrumentIcon, type IconKind } from '../components/InstrumentIcon';
 import { Segmented } from '../components/Segmented';
 import { S, tuningLabel } from '../strings';
@@ -16,6 +22,8 @@ interface Props {
   onSelect(id: string): void;
   onChromatic(): void;
   onClose(): void;
+  onNew(instrument: Instrument, strings: number): void;
+  onEdit(t: Tuning): void;
 }
 
 const KINDS: readonly IconKind[] = ['guitar', 'bass', 'chromatic'];
@@ -91,8 +99,18 @@ export function TuningPicker(p: Props) {
                     </span>
                     <span class="mark" />
                   </button>
+                  {!t.builtIn && (
+                    <button class="edit" aria-label={S.picker.edit} onClick={() => p.onEdit(t)}>
+                      ✎
+                    </button>
+                  )}
                 </li>
               ))}
+              <li style={{ '--i': tuningsFor(p.tunings, kind, strings).length }}>
+                <button class="tuning new" onClick={() => p.onNew(kind, strings)}>
+                  <span class="name">{S.picker.newTuning}</span>
+                </button>
+              </li>
             </ul>
           </>
         )}

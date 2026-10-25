@@ -535,6 +535,57 @@ h1 {
   opacity: 1;
   transform: scale(1);
 }
+.tuning-list > li:has(.edit) {
+  display: flex;
+  align-items: center;
+}
+.tuning .name {
+  min-width: 0;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tuning-list .edit {
+  flex: none;
+  padding: 0;
+  color: var(--dim);
+}
+.tuning.new {
+  color: var(--dim);
+}
+
+/* Editor */
+.editor input {
+  font-size: 20px;
+}
+.editor-strings {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+.editor-strings li {
+  display: grid;
+  grid-template-columns: 64px 1fr 64px;
+  align-items: center;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 24px;
+  border-bottom: 1px solid var(--faint);
+}
+.editor-strings button {
+  font-size: 14px;
+  color: var(--dim);
+}
+.editor .delete {
+  margin-top: auto;
+  align-self: center;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+}
+.editor .delete.armed {
+  color: var(--far);
+}
 .chroma {
   padding: 24px 0;
   text-align: center;

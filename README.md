@@ -21,3 +21,13 @@ npm run lint
 
 Cada push a `main` corre lint, tests y build, y publica en
 https://matiasarrebillaga.github.io/afinador/ (GitHub Actions → Pages).
+
+## Instalar en el celular
+
+Abrir https://matiasarrebillaga.github.io/afinador/ en Chrome Android → menú ⋮ → "Instalar app".
+Una vez instalada funciona sin conexión.
+
+## Íconos
+
+Provisorios, generados con `npm run icons` (`scripts/make-icons.mjs`). Reemplazar los archivos de
+`public/icons/` cuando exista el ícono definitivo.

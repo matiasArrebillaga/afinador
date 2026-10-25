@@ -64,7 +64,7 @@ export function TuningPicker(p: Props) {
             </div>
             <button class="tuning" aria-pressed={p.chromatic} onClick={p.onChromatic}>
               <span class="name">{S.picker.useChromatic}</span>
-              <span class="mark">✓</span>
+              <span class="mark" />
             </button>
           </div>
         ) : (
@@ -79,22 +79,18 @@ export function TuningPicker(p: Props) {
               />
             </div>
             <ul class="tuning-list" key={`${kind}-${strings}`}>
-              {tuningsFor(p.tunings, kind, strings).map((t) => (
-                <li key={t.id}>
+              {tuningsFor(p.tunings, kind, strings).map((t, i) => (
+                <li key={t.id} style={{ '--i': i }}>
                   <button
                     class="tuning"
                     aria-pressed={!p.chromatic && t.id === p.activeId}
                     onClick={() => p.onSelect(t.id)}
                   >
-                    <span>
-                      <span class="name">{tuningLabel(t)}</span>
-                      <span class="notes">
-                        {t.notes.map((n, i) => (
-                          <span key={i}>{displayNote(n, p.naming)}</span>
-                        ))}
-                      </span>
+                    <span class="name">{tuningLabel(t)}</span>
+                    <span class="notes">
+                      {t.notes.map((n) => displayNote(n, p.naming)).join(' ')}
                     </span>
-                    <span class="mark">✓</span>
+                    <span class="mark" />
                   </button>
                 </li>
               ))}

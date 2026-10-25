@@ -57,7 +57,7 @@ export function App() {
   if (screen === 'debug') {
     return <DebugScreen frame={frame} engine={engine.current} onClose={() => setScreen('tuner')} />;
   }
-  // Short pause so the ✓ lands before the sheet slides away.
+  // Short pause so the selected dot lands before the sheet slides away.
   const closeSoon = () => setTimeout(() => setPickerOpen(false), 160);
   return (
     <>

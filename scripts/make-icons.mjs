@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { Buffer } from 'node:buffer';
 import { crc32, deflateSync } from 'node:zlib';
 
-const BG = [11, 11, 11];
+const BG = [22, 22, 22];
 const WHITE = [242, 242, 240];
 const LIME = [198, 255, 61];
 
@@ -60,7 +60,7 @@ function png(size, pad) {
   ]);
 }
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#0b0b0b"/>${[
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#161616"/>${[
   0, 1, 2, 3, 4, 5, 6,
 ]
   .map(

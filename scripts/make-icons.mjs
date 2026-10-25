@@ -3,9 +3,9 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { Buffer } from 'node:buffer';
 import { crc32, deflateSync } from 'node:zlib';
 
-const BG = [11, 12, 13];
-const WHITE = [238, 240, 238];
-const GREEN = [94, 227, 143];
+const BG = [11, 11, 11];
+const WHITE = [242, 242, 240];
+const LIME = [198, 255, 61];
 
 function draw(size, pad) {
   const px = Buffer.alloc(size * size * 3);
@@ -28,7 +28,7 @@ function draw(size, pad) {
       Math.round(pad + unit * 5),
       Math.round(unit * 1.2),
       Math.round(unit * 6),
-      k === 3 ? GREEN : WHITE,
+      k === 3 ? LIME : WHITE,
     );
   }
   return px;
@@ -60,12 +60,12 @@ function png(size, pad) {
   ]);
 }
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#0b0c0d"/>${[
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="#0b0b0b"/>${[
   0, 1, 2, 3, 4, 5, 6,
 ]
   .map(
     (k) =>
-      `<rect x="${1.4 + k * 2}" y="5" width="1.2" height="6" fill="${k === 3 ? '#5ee38f' : '#eef0ee'}"/>`,
+      `<rect x="${1.4 + k * 2}" y="5" width="1.2" height="6" fill="${k === 3 ? '#c6ff3d' : '#f2f2f0'}"/>`,
   )
   .join('')}</svg>`;
 

@@ -32,7 +32,7 @@ function centsText(view: TunerView): string {
 
 export function TunerScreen(p: TunerScreenProps) {
   const { view } = p;
-  const state = !view ? ' idle' : view.outOfRange ? ' far' : view.inTune ? ' in-tune' : '';
+  const state = !view ? ' idle' : view.inTune ? ' in-tune' : '';
   const shown = view ? displayNote(view.note, p.naming) : '—';
   const [, name, octave] = /^(.*?)(-?\d*)$/.exec(shown)!;
   return (

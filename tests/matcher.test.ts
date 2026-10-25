@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { OUT_OF_RANGE_CENTS, matchChromatic, matchIndex, matchString } from '../src/music/matcher';
+import { cents } from '../src/music/notes';
 
 const STANDARD = ['E2', 'A2', 'D3', 'G3', 'B3', 'E4'];
 
@@ -22,6 +23,17 @@ describe('matcher', () => {
 
   it('reports far-away notes as beyond the out-of-range limit', () => {
     expect(Math.abs(matchString(60, STANDARD, 440).cents)).toBeGreaterThan(OUT_OF_RANGE_CENTS);
+  });
+
+  it('folds an octave-up reading onto the string it is the 2nd harmonic of', () => {
+    const m = matchString(162, STANDARD, 440); // phone mic misses E2's fundamental
+    expect(m.note).toBe('E2');
+    expect(m.cents).toBeCloseTo(cents(81, 82.41), 0);
+    expect(matchIndex(162, STANDARD, 0, 440).cents).toBeCloseTo(cents(81, 82.41), 0);
+  });
+
+  it('does not fold readings that already match a string', () => {
+    expect(matchString(146.8, ['D2', 'A2', 'D3'], 440).note).toBe('D3');
   });
 
   it('manual match targets the given string and clamps the index', () => {

@@ -12,7 +12,7 @@ export type WindowSize = 2048 | 4096 | 8192;
 export const MIN_FREQ = 25;
 export const MAX_FREQ = 1200;
 export const MIN_CLARITY = 0.9;
-export const DEFAULT_RMS_THRESHOLD = 0.01;
+export const DEFAULT_RMS_THRESHOLD = 0.002; // measured: silence ~0.0002, string ~0.02
 
 export function windowSizeFor(lowestFreq: number | null): WindowSize {
   if (lowestFreq === null) return 4096;

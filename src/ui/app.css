@@ -7,3 +7,9 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; background: var(--bg); color: var(--fg); font-family: var(--font); }
 .screen { display: flex; flex-direction: column; gap: 16px; min-height: 100dvh; padding: 16px; }
+button { font: inherit; color: inherit; background: none; border: 3px solid var(--fg); min-width: 48px; min-height: 48px; padding: 0 12px; }
+.start { justify-content: center; align-items: center; }
+.start-btn { width: 160px; height: 160px; font-size: 64px; }
+.error { border: 3px solid var(--fg); padding: 12px; }
+.debug pre { font-size: 16px; line-height: 1.6; }
+.debug input { width: 100%; }

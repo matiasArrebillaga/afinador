@@ -1,6 +1,6 @@
 import { A4_DEFAULT, A4_MAX, A4_MIN, type NoteNaming } from '../music/notes';
 import type { Mode } from '../music/tuner';
-import { DEFAULT_TUNING_ID } from '../music/tunings';
+import { DEFAULT_TUNING_ID, isValidName, isValidTuningShape, type Tuning } from '../music/tunings';
 
 export interface Settings {
   a4: number;
@@ -65,4 +65,33 @@ export function loadSettings(): Settings {
 
 export function saveSettings(s: Settings): void {
   write(SETTINGS_KEY, s);
+}
+
+const TUNINGS_KEY = 'afinador:tunings';
+
+function isStoredTuning(t: unknown): t is Tuning {
+  if (!t || typeof t !== 'object') return false;
+  const r = t as Record<string, unknown>;
+  return (
+    typeof r.id === 'string' &&
+    typeof r.name === 'string' &&
+    isValidName(r.name) &&
+    isValidTuningShape(r.instrument, r.notes)
+  );
+}
+
+export function loadTunings(): Tuning[] {
+  const d = read(TUNINGS_KEY);
+  if (!Array.isArray(d)) return [];
+  return d.filter(isStoredTuning).map((t) => ({
+    id: t.id,
+    name: t.name,
+    instrument: t.instrument,
+    notes: [...t.notes],
+    builtIn: false,
+  }));
+}
+
+export function saveTunings(tunings: readonly Tuning[]): void {
+  write(TUNINGS_KEY, tunings);
 }

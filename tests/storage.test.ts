@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_SETTINGS, loadSettings, saveSettings } from '../src/state/storage';
+import {
+  DEFAULT_SETTINGS,
+  loadSettings,
+  loadTunings,
+  saveSettings,
+  saveTunings,
+} from '../src/state/storage';
 import { fakeStorage } from './helpers/storage';
 
 describe('settings storage', () => {
@@ -47,5 +53,49 @@ describe('settings storage', () => {
     vi.stubGlobal('localStorage', { getItem: boom, setItem: boom });
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
     expect(() => saveSettings(DEFAULT_SETTINGS)).not.toThrow();
+  });
+});
+
+describe('tunings storage', () => {
+  beforeEach(() => vi.stubGlobal('localStorage', fakeStorage()));
+  afterEach(() => vi.unstubAllGlobals());
+
+  const mine = {
+    id: 'u1',
+    name: 'Mía',
+    instrument: 'guitar' as const,
+    notes: ['C2', 'G2', 'C3', 'G3', 'C4', 'E4'],
+    builtIn: false,
+  };
+
+  it('starts empty and round-trips', () => {
+    expect(loadTunings()).toEqual([]);
+    saveTunings([mine]);
+    expect(loadTunings()).toEqual([mine]);
+  });
+
+  it('drops invalid entries and forces builtIn false', () => {
+    localStorage.setItem(
+      'afinador:tunings',
+      JSON.stringify({
+        version: 1,
+        data: [
+          { ...mine, builtIn: true },
+          { ...mine, id: 'u2', notes: ['C2'] },
+          { ...mine, id: 'u3', name: 'x'.repeat(41) },
+          'garbage',
+        ],
+      }),
+    );
+    expect(loadTunings()).toEqual([mine]);
+  });
+
+  it('survives a blocked localStorage', () => {
+    const boom = () => {
+      throw new Error('blocked');
+    };
+    vi.stubGlobal('localStorage', { getItem: boom, setItem: boom });
+    expect(loadTunings()).toEqual([]);
+    expect(() => saveTunings([mine])).not.toThrow();
   });
 });

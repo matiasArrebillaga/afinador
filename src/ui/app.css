@@ -1,15 +1,415 @@
+/* Direction B (ruler): hairlines, one gliding needle, color by distance from the note. */
 :root {
-  --bg: #000;
-  --fg: #fff;
+  --bg: #0b0c0d;
+  --panel: #121415;
+  --fg: #eef0ee;
+  --dim: #7c817e;
+  --faint: #2a2d2c;
+  --ok: #5ee38f;
+  --ok-glow: rgba(94, 227, 143, 0.18);
+  --far: #ff6b5a;
   --font: ui-monospace, Menlo, Consolas, monospace;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   color-scheme: dark;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; background: var(--bg); color: var(--fg); font-family: var(--font); }
-.screen { display: flex; flex-direction: column; gap: 16px; min-height: 100dvh; padding: 16px; }
-button { font: inherit; color: inherit; background: none; border: 3px solid var(--fg); min-width: 48px; min-height: 48px; padding: 0 12px; }
-.start { justify-content: center; align-items: center; }
-.start-btn { width: 160px; height: 160px; font-size: 64px; }
-.error { border: 3px solid var(--fg); padding: 12px; }
-.debug pre { font-size: 16px; line-height: 1.6; }
-.debug input { width: 100%; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+}
+body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 1px solid var(--faint);
+  border-radius: 12px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0 12px;
+  touch-action: manipulation;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease,
+    transform 120ms var(--ease-out);
+}
+button:active {
+  transform: scale(0.97);
+}
+button:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 2px;
+}
+button[aria-pressed='true'] {
+  background: var(--fg);
+  color: var(--bg);
+  border-color: var(--fg);
+}
+button:disabled {
+  opacity: 0.3;
+}
+input {
+  font: inherit;
+  font-size: 16px;
+  color: inherit;
+  background: none;
+  border: 1px solid var(--faint);
+  border-radius: 12px;
+  padding: 12px;
+  width: 100%;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100dvh;
+  padding: 20px;
+}
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.dim {
+  color: var(--dim);
+}
+.error {
+  border: 1px solid var(--far);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--far);
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+h1 {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  color: var(--dim);
+}
+.chip {
+  border-radius: 99px;
+  font-size: 13px;
+}
+
+.start {
+  justify-content: center;
+  align-items: center;
+}
+.start-btn {
+  width: 160px;
+  height: 160px;
+  font-size: 56px;
+  border-radius: 50%;
+}
+
+/* Tuner */
+.tuner {
+  --c: var(--fg);
+  position: relative;
+  overflow: hidden;
+  justify-content: space-between;
+}
+.tuner::before {
+  content: '';
+  position: absolute;
+  inset: -40% -20% auto;
+  height: 70%;
+  background: radial-gradient(closest-side, var(--c), transparent);
+  opacity: 0.16;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+.tuner.far::before {
+  opacity: 0.1;
+}
+.tuner > * {
+  position: relative;
+}
+.readout {
+  text-align: center;
+}
+.note {
+  font-size: min(30vw, 24dvh);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  white-space: nowrap;
+  transition: color 200ms ease;
+}
+.note sub {
+  font-size: 0.27em;
+  color: var(--dim);
+  letter-spacing: 0;
+}
+.note-inner {
+  display: inline-block;
+  animation: note-in 180ms var(--ease-out);
+}
+@keyframes note-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.status {
+  min-height: 22px;
+  margin-top: 10px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c);
+}
+.status:not(:empty) {
+  animation: fade-in 200ms var(--ease-out);
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+.in-tune .note,
+.in-tune .status {
+  color: var(--ok);
+}
+
+.meter {
+  position: relative;
+  height: 92px;
+}
+.zone {
+  position: absolute;
+  left: 47%;
+  width: 6%;
+  top: 8px;
+  bottom: 26px;
+  border-radius: 6px;
+  background: var(--faint);
+  opacity: 0.6;
+  transition:
+    background-color 200ms ease,
+    box-shadow 200ms ease,
+    opacity 200ms ease;
+}
+.in-tune .zone {
+  background: var(--ok-glow);
+  box-shadow: 0 0 24px var(--ok-glow);
+  opacity: 1;
+}
+.band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 26px;
+  height: 3px;
+  border-radius: 3px;
+  opacity: 0.55;
+  background: linear-gradient(
+    90deg,
+    #ff5a4e,
+    #ffb547 30%,
+    var(--ok) 47%,
+    var(--ok) 53%,
+    #ffb547 70%,
+    #ff5a4e
+  );
+}
+.ticks {
+  position: absolute;
+  inset: 8px 0 26px;
+}
+.ticks i {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  background: var(--faint);
+}
+.ticks i.major {
+  background: var(--dim);
+}
+.ticks i.zero {
+  background: var(--fg);
+  width: 2px;
+  margin-left: -0.5px;
+}
+.labels {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-size: 10px;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.labels span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+.track {
+  position: absolute;
+  inset: 0 0 20px;
+}
+/* Readings arrive every 40 ms; a short transition retargets smoothly instead of restarting. */
+.needle {
+  position: absolute;
+  inset: 0;
+  transition:
+    transform 120ms var(--ease-out),
+    opacity 200ms ease;
+  will-change: transform;
+}
+.needle.idle {
+  opacity: 0.25;
+}
+.needle::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 3px;
+  background: var(--c);
+  box-shadow: 0 0 10px var(--c);
+  transition: box-shadow 200ms ease;
+}
+.needle::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: -5px;
+  width: 11px;
+  height: 11px;
+  margin-left: -5.5px;
+  border-radius: 50%;
+  background: var(--c);
+}
+.in-tune .needle::before {
+  box-shadow: 0 0 16px var(--c);
+}
+.hz {
+  text-align: center;
+  font-size: 13px;
+  min-height: 16px;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+.hz b {
+  color: var(--fg);
+  font-weight: 500;
+}
+
+.strings {
+  list-style: none;
+  display: flex;
+  gap: 6px;
+}
+.strings li {
+  flex: 1;
+}
+.strings button {
+  position: relative;
+  width: 100%;
+  padding: 0;
+  font-size: 15px;
+  color: var(--dim);
+}
+.strings button[aria-pressed='true'] {
+  background: var(--c);
+  color: var(--bg);
+  border-color: var(--c);
+  transition: none;
+}
+.strings .ok {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ok);
+  font-size: 0;
+}
+.strings button[aria-pressed='true'] .ok {
+  background: var(--bg);
+}
+
+.resume {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 0;
+  border-radius: 0;
+  background: rgba(11, 12, 13, 0.85);
+  font-size: 56px;
+}
+
+/* Picker */
+.tuning-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tuning-list li {
+  display: flex;
+  gap: 8px;
+}
+.tuning-list li > button:first-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 10px 14px;
+  text-align: left;
+}
+.tuning-list li > button[aria-pressed='true'] .dim {
+  color: var(--bg);
+}
+
+.debug pre {
+  font-size: 16px;
+  line-height: 1.6;
+}
+.debug input {
+  width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .needle {
+    transition: opacity 200ms ease;
+  }
+  .note-inner,
+  .status:not(:empty) {
+    animation: none;
+  }
+  button:active {
+    transform: none;
+  }
+}

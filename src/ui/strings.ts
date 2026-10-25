@@ -9,6 +9,13 @@ const es = {
     unknown: 'Error de micrófono',
   } satisfies Record<MicErrorKind, string>,
   status: { inTune: '✓ afinada', up: '↑ tensar', down: '↓ aflojar', far: 'fuera de rango' },
+  kinds: { guitar: 'Guitarra', bass: 'Bajo', chromatic: 'Cromático' },
+  picker: {
+    title: 'Afinación',
+    strings: 'Cuerdas',
+    chromaticHint: 'Detecta cualquier nota, sin afinación de referencia.',
+    useChromatic: 'Usar cromático',
+  },
   tuningNames: {
     Standard: 'Estándar',
     'Half step down': 'Medio tono abajo',
@@ -25,6 +32,13 @@ const en: typeof es = {
     unknown: 'Microphone error',
   },
   status: { inTune: '✓ in tune', up: '↑ tighten', down: '↓ loosen', far: 'out of range' },
+  kinds: { guitar: 'Guitar', bass: 'Bass', chromatic: 'Chromatic' },
+  picker: {
+    title: 'Tuning',
+    strings: 'Strings',
+    chromaticHint: 'Detects any note, no reference tuning.',
+    useChromatic: 'Use chromatic',
+  },
   tuningNames: {},
 };
 

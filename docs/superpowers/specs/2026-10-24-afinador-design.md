@@ -76,10 +76,14 @@ Notas de grave a aguda. Frecuencias calculadas desde la nota y La4; nunca guarda
 La primera de cada combinación es la **estándar** de esa combinación (base para "desde cero").
 Los nombres de predefinidas pasan por `strings.ts`.
 
-### Selector de afinación (3 niveles, una sola pantalla)
-1. Ícono de instrumento (guitarra / bajo).
-2. Botones de cantidad de cuerdas (`6 7 8` o `4 5 6`).
-3. Lista de afinaciones de esa combinación: predefinidas + propias.
+### Selector de afinación (hoja que sube desde abajo, sobre el afinador)
+1. Control segmentado **Guitarra · Bajo · Cromático**, con siluetas de instrumento y texto.
+2. **Cuerdas**: control segmentado (`6 7 8` o `4 5 6`); se oculta en Cromático.
+3. Lista de afinaciones de esa combinación (predefinidas + propias), cada una con sus notas en chips;
+   la activa con borde verde y ✓. Elegir una la aplica y cierra la hoja.
+4. **Cromático** reemplaza la lista por una explicación breve y "Usar cromático".
+- El botón del afinador muestra ícono + afinación + instrumento y cuerdas (`Estándar · Guitarra 6 ▾`),
+  o `Cromático ▾`. En cromático no se muestran cuerdas y aparece una etiqueta "cromático".
 
 La última afinación activa se recuerda (`activeTuningId`), ya desde el MVP.
 
@@ -143,7 +147,7 @@ interface Settings {
   o al recargar.
 - **Retención:** al dejar de sonar, mantener la última lectura ~1 s y volver a espera.
 - **Manual (fase 3):** tocar una cuerda en pantalla la fija como objetivo.
-- **Cromático (fase 3):** objetivo = semitono más cercano, sin afinación de referencia.
+- **Cromático (adelantado a fase 2, desde el selector):** objetivo = semitono más cercano, sin afinación de referencia.
 
 ---
 

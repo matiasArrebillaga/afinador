@@ -1,6 +1,7 @@
 import { displayNote, type NoteNaming } from '../../music/notes';
 import type { TunerView } from '../../music/tuner';
 import type { Tuning } from '../../music/tunings';
+import { InstrumentIcon } from '../components/InstrumentIcon';
 import { Meter, meterColor } from '../components/Meter';
 import { StringList } from '../components/StringList';
 import { S, tuningLabel } from '../strings';
@@ -8,6 +9,7 @@ import { S, tuningLabel } from '../strings';
 export interface TunerScreenProps {
   view: TunerView | null;
   tuning: Tuning;
+  chromatic: boolean;
   naming: NoteNaming;
   confirmed: ReadonlySet<number>;
   suspended: boolean;
@@ -36,8 +38,20 @@ export function TunerScreen(p: TunerScreenProps) {
     >
       <header>
         <h1 onClick={p.onTitleTap}>AFINADOR</h1>
-        <button class="chip" onClick={p.onOpenPicker}>
-          {tuningLabel(p.tuning)} ▾
+        <button class="chip pick" onClick={p.onOpenPicker}>
+          {p.chromatic ? (
+            <>
+              <InstrumentIcon kind="chromatic" height={28} /> {S.kinds.chromatic}
+            </>
+          ) : (
+            <>
+              <InstrumentIcon kind={p.tuning.instrument} height={18} /> {tuningLabel(p.tuning)}{' '}
+              <small>
+                · {S.kinds[p.tuning.instrument]} {p.tuning.notes.length}
+              </small>
+            </>
+          )}{' '}
+          ▾
         </button>
       </header>
       {p.suspended && (
@@ -46,6 +60,7 @@ export function TunerScreen(p: TunerScreenProps) {
         </button>
       )}
       <div class="readout">
+        {p.chromatic && <span class="badge">{S.kinds.chromatic}</span>}
         <div class="note">
           {/* key remounts the span so the entry animation plays on every note change */}
           <span key={shown} class="note-inner">
@@ -68,12 +83,16 @@ export function TunerScreen(p: TunerScreenProps) {
           ' '
         )}
       </div>
-      <StringList
-        notes={p.tuning.notes}
-        naming={p.naming}
-        activeIndex={view?.stringIndex ?? -1}
-        confirmed={p.confirmed}
-      />
+      {p.chromatic ? (
+        <div class="strings-spacer" />
+      ) : (
+        <StringList
+          notes={p.tuning.notes}
+          naming={p.naming}
+          activeIndex={view?.stringIndex ?? -1}
+          confirmed={p.confirmed}
+        />
+      )}
     </main>
   );
 }

@@ -8,7 +8,7 @@ import { TunerScreen } from './ui/screens/TunerScreen';
 import { TuningPicker } from './ui/screens/TuningPicker';
 import { useTunerEngine } from './ui/use-tuner';
 
-type Screen = 'tuner' | 'picker' | 'debug';
+type Screen = 'tuner' | 'debug';
 
 export function App() {
   const [settings, setSettings] = useState(loadSettings);
@@ -16,6 +16,7 @@ export function App() {
   const [micError, setMicError] = useState<MicErrorKind | null>(null);
   const [suspended, setSuspended] = useState(false);
   const [screen, setScreen] = useState<Screen>('tuner');
+  const [pickerOpen, setPickerOpen] = useState(false);
   const taps = useRef({ count: 0, at: 0 });
 
   const tunings = BUILT_IN_TUNINGS;
@@ -56,30 +57,37 @@ export function App() {
   if (screen === 'debug') {
     return <DebugScreen frame={frame} engine={engine.current} onClose={() => setScreen('tuner')} />;
   }
-  if (screen === 'picker') {
-    return (
+  // Short pause so the ✓ lands before the sheet slides away.
+  const closeSoon = () => setTimeout(() => setPickerOpen(false), 160);
+  return (
+    <>
+      <TunerScreen
+        view={view}
+        tuning={tuning}
+        chromatic={settings.mode === 'chromatic'}
+        naming={settings.noteNaming}
+        confirmed={confirmed}
+        suspended={suspended}
+        onResume={() => void mic.context.resume()}
+        onOpenPicker={() => setPickerOpen(true)}
+        onTitleTap={onTitleTap}
+      />
       <TuningPicker
+        open={pickerOpen}
         tunings={tunings}
         activeId={tuning.id}
+        chromatic={settings.mode === 'chromatic'}
         naming={settings.noteNaming}
         onSelect={(id) => {
-          updateSettings({ activeTuningId: id });
-          setScreen('tuner');
+          updateSettings({ activeTuningId: id, mode: 'auto' });
+          closeSoon();
         }}
-        onClose={() => setScreen('tuner')}
+        onChromatic={() => {
+          updateSettings({ mode: 'chromatic' });
+          closeSoon();
+        }}
+        onClose={() => setPickerOpen(false)}
       />
-    );
-  }
-  return (
-    <TunerScreen
-      view={view}
-      tuning={tuning}
-      naming={settings.noteNaming}
-      confirmed={confirmed}
-      suspended={suspended}
-      onResume={() => void mic.context.resume()}
-      onOpenPicker={() => setScreen('picker')}
-      onTitleTap={onTitleTap}
-    />
+    </>
   );
 }

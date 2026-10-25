@@ -63,6 +63,13 @@ describe('Tuner', () => {
     expect(view.outOfRange).toBe(true);
   });
 
+  it('manual mode holds a string tuned two steps down instead of jumping to another', () => {
+    const view = new Tuner(config({ mode: 'manual', manualIndex: 1 })).update(87.31, 0)!; // F2 on the A2 string
+    expect(view).toMatchObject({ stringIndex: 1, note: 'F2', outOfRange: true });
+    expect(view.cents).toBeLessThan(-50);
+    expect(new Tuner(config()).update(87.31, 0)!.stringIndex).toBe(0); // auto picks E2
+  });
+
   it('chromatic mode ignores the strings', () => {
     const view = new Tuner(config({ mode: 'chromatic' })).update(445, 0)!;
     expect(view).toMatchObject({ note: 'A4', stringIndex: -1 });

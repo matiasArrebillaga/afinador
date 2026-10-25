@@ -10,11 +10,13 @@ const es = {
   } satisfies Record<MicErrorKind, string>,
   status: { inTune: '✓ afinada', up: '↑ tensar', down: '↓ aflojar', far: 'fuera de rango' },
   kinds: { guitar: 'Guitarra', bass: 'Bajo', chromatic: 'Cromático' },
+  locked: 'fijada',
   picker: {
     title: 'Afinación',
     strings: 'Cuerdas',
     chromaticHint: 'Detecta cualquier nota, sin afinación de referencia.',
-    useChromatic: 'Usar cromático',
+    a4: 'La4',
+    a4Reset: 'Volver a 440 Hz',
   },
   tuningNames: {
     Standard: 'Estándar',
@@ -33,11 +35,13 @@ const en: typeof es = {
   },
   status: { inTune: '✓ in tune', up: '↑ tighten', down: '↓ loosen', far: 'out of range' },
   kinds: { guitar: 'Guitar', bass: 'Bass', chromatic: 'Chromatic' },
+  locked: 'locked',
   picker: {
     title: 'Tuning',
     strings: 'Strings',
     chromaticHint: 'Detects any note, no reference tuning.',
-    useChromatic: 'Use chromatic',
+    a4: 'A4',
+    a4Reset: 'Reset to 440 Hz',
   },
   tuningNames: {},
 };

@@ -17,13 +17,16 @@ export function App() {
   const [suspended, setSuspended] = useState(false);
   const [screen, setScreen] = useState<Screen>('tuner');
   const [pickerOpen, setPickerOpen] = useState(false);
+  // Not persisted: a lock only makes sense for the string you are tuning right now.
+  const [lockedIndex, setLockedIndex] = useState<number | null>(null);
   const taps = useRef({ count: 0, at: 0 });
 
   const tunings = BUILT_IN_TUNINGS;
   const tuning = findTuning(tunings, settings.activeTuningId);
-  const { frame, view, confirmed, engine } = useTunerEngine(mic, tuning, settings, 0);
+  const { frame, view, confirmed, engine } = useTunerEngine(mic, tuning, settings, lockedIndex);
 
   function updateSettings(patch: Partial<Settings>) {
+    if ('activeTuningId' in patch || 'mode' in patch) setLockedIndex(null);
     setSettings((s) => {
       const next = { ...s, ...patch };
       saveSettings(next);
@@ -66,7 +69,10 @@ export function App() {
         tuning={tuning}
         chromatic={settings.mode === 'chromatic'}
         naming={settings.noteNaming}
+        a4={settings.a4}
         confirmed={confirmed}
+        lockedIndex={lockedIndex}
+        onLock={setLockedIndex}
         suspended={suspended}
         onResume={() => void mic.context.resume()}
         onOpenPicker={() => setPickerOpen(true)}
@@ -82,6 +88,8 @@ export function App() {
           updateSettings({ activeTuningId: id, mode: 'auto' });
           closeSoon();
         }}
+        a4={settings.a4}
+        onA4={(a4) => updateSettings({ a4 })}
         onChromatic={() => {
           updateSettings({ mode: 'chromatic' });
           closeSoon();

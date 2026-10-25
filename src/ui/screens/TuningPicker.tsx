@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { displayNote, type NoteNaming } from '../../music/notes';
+import { A4_DEFAULT, A4_MAX, A4_MIN, displayNote, type NoteNaming } from '../../music/notes';
 import { STRING_COUNTS, findTuning, tuningsFor, type Tuning } from '../../music/tunings';
 import { InstrumentIcon, type IconKind } from '../components/InstrumentIcon';
 import { Segmented } from '../components/Segmented';
@@ -11,6 +11,8 @@ interface Props {
   activeId: string;
   chromatic: boolean;
   naming: NoteNaming;
+  a4: number;
+  onA4(a4: number): void;
   onSelect(id: string): void;
   onChromatic(): void;
   onClose(): void;
@@ -32,6 +34,7 @@ export function TuningPicker(p: Props) {
 
   function pickKind(k: IconKind) {
     setKind(k);
+    if (k === 'chromatic') p.onChromatic();
     if (k !== 'chromatic')
       setStrings(k === active.instrument ? active.notes.length : STRING_COUNTS[k][0]);
   }
@@ -62,10 +65,6 @@ export function TuningPicker(p: Props) {
               <b>C C# D … B</b>
               {S.picker.chromaticHint}
             </div>
-            <button class="tuning" aria-pressed={p.chromatic} onClick={p.onChromatic}>
-              <span class="name">{S.picker.useChromatic}</span>
-              <span class="mark" />
-            </button>
           </div>
         ) : (
           <>
@@ -97,6 +96,18 @@ export function TuningPicker(p: Props) {
             </ul>
           </>
         )}
+        <div class="a4">
+          <span class="label">{S.picker.a4}</span>
+          <button aria-label="−1 Hz" disabled={p.a4 <= A4_MIN} onClick={() => p.onA4(p.a4 - 1)}>
+            −
+          </button>
+          <button class="a4-value" aria-label={S.picker.a4Reset} onClick={() => p.onA4(A4_DEFAULT)}>
+            {p.a4} Hz
+          </button>
+          <button aria-label="+1 Hz" disabled={p.a4 >= A4_MAX} onClick={() => p.onA4(p.a4 + 1)}>
+            +
+          </button>
+        </div>
       </section>
     </div>
   );

@@ -1,26 +1,36 @@
 import { displayNote, type NoteNaming } from '../../music/notes';
+import { S } from '../strings';
 
 interface Props {
   notes: readonly string[];
   naming: NoteNaming;
   activeIndex: number;
   confirmed: ReadonlySet<number>;
-  onTap?(index: number): void;
+  lockedIndex: number | null;
+  onTap(index: number): void;
 }
 
-export function StringList({ notes, naming, activeIndex, confirmed, onTap }: Props) {
+export function StringList({ notes, naming, activeIndex, confirmed, lockedIndex, onTap }: Props) {
+  const shown = lockedIndex ?? activeIndex;
   return (
-    <div class="strings" style={{ '--count': notes.length }}>
+    <div
+      class={lockedIndex === null ? 'strings' : 'strings locked'}
+      style={{ '--count': notes.length }}
+    >
       <ol>
         {notes.map((note, i) => (
           <li key={i}>
             <button
-              aria-pressed={i === activeIndex}
+              aria-pressed={i === shown}
               class={confirmed.has(i) ? 'done' : undefined}
-              onClick={onTap && (() => onTap(i))}
+              onClick={(e) => {
+                e.stopPropagation(); // the screen behind unlocks on tap
+                onTap(i);
+              }}
             >
               {displayNote(note, naming)}
               {confirmed.has(i) && <span class="sr-only"> ✓</span>}
+              {i === lockedIndex && <span class="sr-only"> {S.locked}</span>}
             </button>
           </li>
         ))}
@@ -30,8 +40,8 @@ export function StringList({ notes, naming, activeIndex, confirmed, onTap }: Pro
         class="string-line"
         aria-hidden="true"
         style={{
-          transform: `translateX(${Math.max(activeIndex, 0) * 100}%)`,
-          opacity: activeIndex < 0 ? 0 : 1,
+          transform: `translateX(${Math.max(shown, 0) * 100}%)`,
+          opacity: shown < 0 ? 0 : 1,
         }}
       />
     </div>

@@ -1,4 +1,4 @@
-import { displayNote, type NoteNaming } from '../../music/notes';
+import { A4_DEFAULT, displayNote, type NoteNaming } from '../../music/notes';
 import type { TunerView } from '../../music/tuner';
 import type { Tuning } from '../../music/tunings';
 import { ArcMeter, meterColor } from '../components/ArcMeter';
@@ -10,7 +10,10 @@ export interface TunerScreenProps {
   tuning: Tuning;
   chromatic: boolean;
   naming: NoteNaming;
+  a4: number;
   confirmed: ReadonlySet<number>;
+  lockedIndex: number | null;
+  onLock(index: number | null): void;
   suspended: boolean;
   onResume(): void;
   onOpenPicker(): void;
@@ -38,6 +41,7 @@ export function TunerScreen(p: TunerScreenProps) {
   return (
     <main
       class={`screen tuner${state}`}
+      onClick={() => p.lockedIndex !== null && p.onLock(null)}
       style={{ '--c': meterColor(view?.cents ?? null, !!view?.outOfRange, !!view?.inTune) }}
     >
       <header>
@@ -49,6 +53,7 @@ export function TunerScreen(p: TunerScreenProps) {
               {S.kinds[p.tuning.instrument]} {p.tuning.notes.length}
             </small>
           )}
+          {p.a4 !== A4_DEFAULT && <small>{p.a4} Hz</small>}
           <span aria-hidden="true">▾</span>
         </button>
       </header>
@@ -83,6 +88,8 @@ export function TunerScreen(p: TunerScreenProps) {
           naming={p.naming}
           activeIndex={view?.stringIndex ?? -1}
           confirmed={p.confirmed}
+          lockedIndex={p.lockedIndex}
+          onTap={(i) => p.onLock(i === p.lockedIndex ? null : i)}
         />
       )}
     </main>

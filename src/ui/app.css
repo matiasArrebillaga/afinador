@@ -318,6 +318,11 @@ h1 {
   height: 1px;
   background: var(--ok);
 }
+.strings.locked .string-line::after {
+  width: 24px;
+  height: 2px;
+  background: var(--c);
+}
 .strings-spacer {
   min-height: 48px;
 }
@@ -443,6 +448,30 @@ h1 {
 }
 .seg button[aria-pressed='true'] {
   color: var(--fg);
+}
+
+/* Reference pitch stepper */
+.a4 {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid var(--faint);
+  padding-top: 8px;
+}
+.a4 .label {
+  flex: 1;
+  margin: 0;
+}
+.a4 button {
+  min-width: 48px;
+  min-height: 48px;
+  font-family: var(--mono);
+  font-size: 15px;
+}
+.a4 button:disabled {
+  color: var(--faint);
+}
+.a4 .a4-value {
+  min-width: 72px;
 }
 
 /* Tuning rows */

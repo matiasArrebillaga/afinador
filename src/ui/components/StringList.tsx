@@ -12,9 +12,10 @@ interface Props {
 
 export function StringList({ notes, naming, activeIndex, confirmed, lockedIndex, onTap }: Props) {
   const shown = lockedIndex ?? activeIndex;
+  const allDone = confirmed.size === notes.length;
   return (
     <div
-      class={lockedIndex === null ? 'strings' : 'strings locked'}
+      class={`strings${lockedIndex === null ? '' : ' locked'}${allDone ? ' all-done' : ''}`}
       style={{ '--count': notes.length }}
     >
       <ol>
@@ -23,6 +24,7 @@ export function StringList({ notes, naming, activeIndex, confirmed, lockedIndex,
             <button
               aria-pressed={i === shown}
               class={confirmed.has(i) ? 'done' : undefined}
+              style={{ '--i': i }}
               onClick={(e) => {
                 e.stopPropagation(); // the screen behind unlocks on tap
                 onTap(i);
